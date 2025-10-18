@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Background Remover</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>White Background Remover</h1>
+        <p class="subtitle">Upload an image to remove its white background and convert to PNG</p>
+
+        <div class="upload-section">
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+            <button id="uploadBtn" class="btn">Choose Image</button>
+        </div>
+
+        <div id="imageContainer" class="hidden">
+            <div class="image-wrapper">
+                <div class="image-box">
+                    <h3>Original Image</h3>
+                    <canvas id="originalCanvas"></canvas>
+                </div>
+                <div class="image-box">
+                    <h3>Processed Image</h3>
+                    <canvas id="processedCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="controls">
+                <label for="threshold">Background Detection Threshold: <span id="thresholdValue">240</span></label>
+                <input type="range" id="threshold" min="200" max="255" value="240" step="1">
+
+                <button id="processBtn" class="btn btn-primary">Remove Background</button>
+                <button id="downloadBtn" class="btn btn-success hidden">Download PNG</button>
+                <button id="resetBtn" class="btn btn-secondary">Upload New Image</button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <p>Processing image...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

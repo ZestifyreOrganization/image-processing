@@ -87,11 +87,14 @@ function processImage() {
             newImageData.data[i + 3] = alphaMask[pixelIndex];
         }
 
-        // Display processed image
+        // Step 5: Trim to object boundaries
+        const trimmedCanvas = trimToObject(newImageData);
+
+        // Display processed image (trimmed)
         const processedCtx = processedCanvas.getContext('2d');
-        processedCanvas.width = width;
-        processedCanvas.height = height;
-        processedCtx.putImageData(newImageData, 0, 0);
+        processedCanvas.width = trimmedCanvas.width;
+        processedCanvas.height = trimmedCanvas.height;
+        processedCtx.drawImage(trimmedCanvas, 0, 0);
 
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('downloadBtn').classList.remove('hidden');
@@ -263,6 +266,67 @@ function createSmoothAlphaMask(data, shouldRemove, width, height, threshold) {
     }
 
     return alphaMask;
+}
+
+function trimToObject(imageData, padding = 10) {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+
+    let minX = width;
+    let minY = height;
+    let maxX = 0;
+    let maxY = 0;
+
+    // Find bounding box of non-transparent pixels
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x) * 4;
+            const alpha = data[i + 3];
+
+            // If pixel is not fully transparent (alpha > threshold)
+            if (alpha > 10) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    // Add padding
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(width - 1, maxX + padding);
+    maxY = Math.min(height - 1, maxY + padding);
+
+    // Calculate dimensions
+    const trimmedWidth = maxX - minX + 1;
+    const trimmedHeight = maxY - minY + 1;
+
+    // Create new canvas with trimmed dimensions
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = trimmedWidth;
+    tempCanvas.height = trimmedHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // Extract trimmed region
+    const trimmedImageData = tempCtx.createImageData(trimmedWidth, trimmedHeight);
+
+    for (let y = 0; y < trimmedHeight; y++) {
+        for (let x = 0; x < trimmedWidth; x++) {
+            const sourceIndex = ((y + minY) * width + (x + minX)) * 4;
+            const targetIndex = (y * trimmedWidth + x) * 4;
+
+            trimmedImageData.data[targetIndex] = data[sourceIndex];
+            trimmedImageData.data[targetIndex + 1] = data[sourceIndex + 1];
+            trimmedImageData.data[targetIndex + 2] = data[sourceIndex + 2];
+            trimmedImageData.data[targetIndex + 3] = data[sourceIndex + 3];
+        }
+    }
+
+    tempCtx.putImageData(trimmedImageData, 0, 0);
+    return tempCanvas;
 }
 
 function downloadImage() {

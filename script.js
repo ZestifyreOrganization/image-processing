@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     threshold.addEventListener('input', (e) => {
         thresholdValue.textContent = e.target.value;
     });
+
+    // Add paste event listener
+    document.addEventListener('paste', handlePaste);
 });
 
 function handleImageUpload(e) {
@@ -44,6 +47,31 @@ function handleImageUpload(e) {
         img.src = event.target.result;
     };
     reader.readAsDataURL(file);
+}
+
+function handlePaste(e) {
+    const items = e.clipboardData.items;
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    displayOriginalImage();
+                    document.getElementById('imageContainer').classList.remove('hidden');
+                    document.getElementById('downloadBtn').classList.add('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(blob);
+            break;
+        }
+    }
 }
 
 function displayOriginalImage() {
